@@ -1,7 +1,6 @@
 package systemmonitor.Controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -30,7 +29,12 @@ public class detailsController {
     @FXML
     private TextField textField;
     private double memtimeIndex = 1;
+    private double memTimestep = 0.5;
+    private int memSample = 100; // <= 100
+
     private double cputimeIndex = 1;
+    private double cpuTimestep = 0.5;
+    private int cpuSample = 100; // <= 100
 
     public void initialize() throws IOException, InterruptedException {
         initializeMemChart();
@@ -62,14 +66,19 @@ public class detailsController {
         // Number>(Integer.toString(timeIndex++), mem));
         // }
 
+        for (int i = 0; i < memSample - 1; i++) {
+            memDataSeries.getData()
+                    .add(new XYChart.Data<String, Number>(Double.toString(memtimeIndex += memTimestep), 0));
+        }
+
         Long mem = da.getCurrentMemoryUsage();
 
         inusememTxt.setText(Long.toString(mem));
         memDataSeries.getData()
-                .add(new XYChart.Data<String, Number>(Double.toString(memtimeIndex++), mem));
+                .add(new XYChart.Data<String, Number>(Double.toString(memtimeIndex += memTimestep), mem));
         memoryChart.getData().add(memDataSeries);
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> updatememChartData()));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(memTimestep), event -> updatememChartData()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }
@@ -88,9 +97,10 @@ public class detailsController {
 
         inusememTxt.setText(Long.toString(mem));
 
-        if (memDataSeries.getData().size() > 10)
+        if (memDataSeries.getData().size() > memSample)
             memDataSeries.getData().remove(0);
-        memDataSeries.getData().add(new XYChart.Data<String, Number>(Double.toString(memtimeIndex++), mem));
+        memDataSeries.getData()
+                .add(new XYChart.Data<String, Number>(Double.toString(memtimeIndex += memTimestep), mem));
     }
 
     private void initializeCpuChart() throws IOException, InterruptedException {
@@ -111,14 +121,19 @@ public class detailsController {
         cpuDataSeries.getData().clear();
         cpuChart.getData().clear();
 
+        for (int i = 0; i < cpuSample - 1; i++) {
+            cpuDataSeries.getData()
+                    .add(new XYChart.Data<String, Number>(Double.toString(cputimeIndex += cpuTimestep), 0));
+        }
+
         Double cpu = da.getCurrentCpuUsage();
 
         utilizationTxt.setText(String.format("%.2f", cpu));
         cpuDataSeries.getData()
-                .add(new XYChart.Data<String, Number>(Double.toString(cputimeIndex++), cpu));
+                .add(new XYChart.Data<String, Number>(Double.toString(cputimeIndex += cpuTimestep), cpu));
         cpuChart.getData().add(cpuDataSeries);
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> updatecpuChartData()));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(cpuTimestep), event -> updatecpuChartData()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }
@@ -133,8 +148,9 @@ public class detailsController {
 
         utilizationTxt.setText(String.format("%.2f", cpu));
 
-        if (cpuDataSeries.getData().size() > 10)
+        if (cpuDataSeries.getData().size() > cpuSample)
             cpuDataSeries.getData().remove(0);
-        cpuDataSeries.getData().add(new XYChart.Data<String, Number>(Double.toString(cputimeIndex++), cpu));
+        cpuDataSeries.getData()
+                .add(new XYChart.Data<String, Number>(Double.toString(cputimeIndex += cpuTimestep), cpu));
     }
 }

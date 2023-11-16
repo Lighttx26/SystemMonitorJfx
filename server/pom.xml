@@ -10,7 +10,6 @@
         <maven.compiler.target>20</maven.compiler.target>
     </properties>
     <dependencies>
-
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>

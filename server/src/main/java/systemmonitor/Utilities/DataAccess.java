@@ -6,7 +6,7 @@ import redis.clients.jedis.Jedis;
 public class DataAccess {
 
     Jedis jedis;
-    static int lim = 10;
+    static int lim = 100;
 
     public DataAccess() {
         jedis = new Jedis("localhost", 6379);

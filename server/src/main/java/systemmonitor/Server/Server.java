@@ -12,7 +12,7 @@ public class Server extends Thread {
     private int BACK_LOG;
 
     public Server() {
-        LoadServerConfig("server\\src\\main\\resources\\config\\config.cfg");
+        LoadServerConfig("src\\main\\resources\\config\\config.cfg");
     }
 
     private void LoadServerConfig(String fileConfig) {

@@ -23,6 +23,7 @@ public class App extends Application {
         server.start();
         scene = new Scene(loadFXML("details"), 600, 355);
         stage.setScene(scene);
+        stage.setTitle("System Monitor");
         stage.show();
     }
 
