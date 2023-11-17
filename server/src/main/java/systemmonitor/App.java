@@ -16,14 +16,20 @@ public class App extends Application {
 
     private static Scene scene;
 
+    // Launch() method will invoke this function
     @Override
     public void start(Stage stage) throws IOException {
+        // Start server to communicate with clients
         Server server = new Server();
         // app.LoadServerConfig("src\\main\\resources\\config\\config.cfg");
-        server.start();
-        scene = new Scene(loadFXML("details"), 600, 355);
+
+        // set UI
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("overview" + ".fxml"));
+        scene = new Scene(fxmlLoader.load(), 500, 375);
         stage.setScene(scene);
         stage.setTitle("System Monitor");
+        server.setController(fxmlLoader.getController());
+        server.start();
         stage.show();
     }
 

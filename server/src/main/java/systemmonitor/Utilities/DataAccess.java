@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import redis.clients.jedis.Jedis;
 
 public class DataAccess {
+    private String clientKey;
 
     Jedis jedis;
     static int lim = 100;
 
-    public DataAccess() {
+    public DataAccess(String clientIP) {
+        this.clientKey = "Client " + clientIP;
         jedis = new Jedis("localhost", 6379);
     }
 
     public ArrayList<Double> getCpuUsages() {
         ArrayList<Double> list = new ArrayList<Double>();
 
-        for (String s_cpu : jedis.lrange("CPU", 0, lim)) {
+        for (String s_cpu : jedis.lrange(clientKey + ":CPU", 0, lim)) {
             list.add(Double.parseDouble(s_cpu));
         }
 
@@ -27,16 +29,16 @@ public class DataAccess {
     }
 
     public void addCpuUsage(Double cpu) {
-        if (jedis.llen("CPU") >= lim)
-            jedis.lpop("CPU");
+        if (jedis.llen(clientKey + ":CPU") >= lim)
+            jedis.lpop(clientKey + ":CPU");
 
-        jedis.rpush("CPU", cpu.toString());
+        jedis.rpush(clientKey + ":CPU", cpu.toString());
     }
 
     public ArrayList<Long> getMemoryUsages() {
         ArrayList<Long> list = new ArrayList<Long>();
 
-        for (String s_mem : jedis.lrange("Memory", 0, lim)) {
+        for (String s_mem : jedis.lrange(clientKey + ":Memory", 0, lim)) {
             list.add(Long.parseLong(s_mem));
         }
 
@@ -44,14 +46,14 @@ public class DataAccess {
     }
 
     public Long getCurrentMemoryUsage() {
-        return Long.parseLong(jedis.lindex("Memory", -1));
+        return Long.parseLong(jedis.lindex(clientKey + ":Memory", -1));
     }
 
     public void addMemUsage(Long mem) {
-        if (jedis.llen("Memory") >= lim)
-            jedis.lpop("Memory");
+        if (jedis.llen(clientKey + ":Memory") >= lim)
+            jedis.lpop(clientKey + ":Memory");
 
-        jedis.rpush("Memory", mem.toString());
+        jedis.rpush(clientKey + ":Memory", mem.toString());
     }
 
     public void close() {

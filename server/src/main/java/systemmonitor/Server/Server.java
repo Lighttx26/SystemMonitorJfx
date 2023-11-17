@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import java.util.Properties;
 
+import javafx.application.Platform;
+import systemmonitor.Controllers.overviewController;
+
 // import utils.ClientHandler;
 
 public class Server extends Thread {
@@ -11,8 +14,10 @@ public class Server extends Thread {
     private int PORT;
     private int BACK_LOG;
 
+    private overviewController overview;
+
     public Server() {
-        LoadServerConfig("src\\main\\resources\\config\\config.cfg");
+        LoadServerConfig("server\\src\\main\\resources\\config\\config.cfg");
     }
 
     private void LoadServerConfig(String fileConfig) {
@@ -27,6 +32,10 @@ public class Server extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setController(overviewController overview) {
+        this.overview = overview;
     }
 
     @Override
@@ -49,6 +58,12 @@ public class Server extends Thread {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Client connected: " + clientSocket.getInetAddress().getHostName());
+                    Platform.runLater(() -> {
+                        // Ensure that overview is not null before calling the method
+                        if (overview != null) {
+                            overview.addAddress(clientSocket.getInetAddress());
+                        }
+                    });
                     // Create a thread to handle the client's request
                     Thread clientHandler = new ClientHandler(clientSocket);
                     clientHandler.start();

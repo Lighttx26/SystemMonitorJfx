@@ -28,8 +28,8 @@ public class ClientHandler extends Thread {
     DataAccess dataAccess;
 
     public ClientHandler(Socket socket) {
-        this.dataAccess = new DataAccess();
         this.clientSocket = socket;
+        this.dataAccess = new DataAccess(socket.getInetAddress().getHostAddress());
     }
 
     @Override
