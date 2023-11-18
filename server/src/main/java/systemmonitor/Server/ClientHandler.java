@@ -29,7 +29,7 @@ public class ClientHandler extends Thread {
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
-        this.dataAccess = new DataAccess(socket.getInetAddress().getHostAddress());
+        this.dataAccess = new DataAccess();
     }
 
     @Override
@@ -41,6 +41,7 @@ public class ClientHandler extends Thread {
             receiveObject();
             // receiveFile();
         } catch (Exception e) {
+            // TODO: handle interrupt connection
             e.printStackTrace();
         } finally {
             if (clientSocket != null) {
@@ -134,8 +135,12 @@ public class ClientHandler extends Thread {
 
             System.out.println("MAC: " + MAC + ": " + processes.size());
 
-            dataAccess.addCpuUsage(CPULoad);
-            dataAccess.addMemUsage(MemUsage);
+            String clientName = clientSocket.getInetAddress().getHostName();
+            dataAccess.setIP(clientName, clientSocket.getInetAddress().getHostAddress());
+            dataAccess.setMAC(clientName, MAC);
+            dataAccess.setOSName(clientName, OSName);
+            dataAccess.addCpuUsage(clientName, CPULoad);
+            dataAccess.addMemUsage(clientName, MemUsage);
 
             // ArrayList<Double> cpus = dataAccess.getCpuUsages();
             // ArrayList<Long> mems = dataAccess.getMemoryUsages();

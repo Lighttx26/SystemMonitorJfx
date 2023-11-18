@@ -61,7 +61,7 @@ public class Server extends Thread {
                     Platform.runLater(() -> {
                         // Ensure that overview is not null before calling the method
                         if (overview != null) {
-                            overview.addAddress(clientSocket.getInetAddress());
+                            overview.addClient(clientSocket.getInetAddress());
                         }
                     });
                     // Create a thread to handle the client's request

@@ -25,7 +25,7 @@ public class App extends Application {
 
         // set UI
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("overview" + ".fxml"));
-        scene = new Scene(fxmlLoader.load(), 500, 375);
+        scene = new Scene((Parent) fxmlLoader.load(), 525, 375);
         stage.setScene(scene);
         stage.setTitle("System Monitor");
         server.setController(fxmlLoader.getController());
@@ -41,6 +41,10 @@ public class App extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
     }
+
+    // public static FXMLLoader getLoader(String fxml) throws IOException {
+    // return new FXMLLoader(App.class.getResource(fxml + ".fxml"));
+    // }
 
     public static void main(String[] args) {
         launch();
