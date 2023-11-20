@@ -65,7 +65,8 @@ public class Server extends Thread {
                         }
                     });
                     // Create a thread to handle the client's request
-                    Thread clientHandler = new ClientHandler(clientSocket);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket);
+                    clientHandler.setController(overview);
                     clientHandler.start();
                 } catch (Exception e) {
                     e.printStackTrace();

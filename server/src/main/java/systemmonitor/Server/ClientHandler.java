@@ -14,6 +14,8 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import javafx.application.Platform;
+import systemmonitor.Controllers.overviewController;
 import systemmonitor.Utilities.DataAccess;
 import systemmonitor.Utilities.Classes.DiskInfo;
 
@@ -25,6 +27,8 @@ public class ClientHandler extends Thread {
     private String OSName = null;
     private String CPUModel = null;
 
+    private overviewController overview;
+
     DataAccess dataAccess;
 
     public ClientHandler(Socket socket) {
@@ -32,17 +36,26 @@ public class ClientHandler extends Thread {
         this.dataAccess = new DataAccess();
     }
 
+    public void setController(overviewController overview) {
+        this.overview = overview;
+    }
+
     @Override
     public void run() {
         try {
-            MAC = GetMACAddress();
-            OSName = GetOSName();
-            CPUModel = GetCPUModel();
-            receiveObject();
+            receiveStaticInfo();
+            receiveDynamicInfo();
+            // receiveObject();
             // receiveFile();
         } catch (Exception e) {
             // TODO: handle interrupt connection
-            e.printStackTrace();
+            Platform.runLater(() -> {
+                // Ensure that overview is not null before calling the method
+                if (overview != null) {
+                    overview.removeClient(clientSocket.getInetAddress());
+                }
+            });
+            // e.printStackTrace();
         } finally {
             if (clientSocket != null) {
                 try {
@@ -101,7 +114,20 @@ public class ClientHandler extends Thread {
         }
     }
 
-    private void receiveObject() throws Exception {
+    private void receiveStaticInfo() throws Exception {
+        this.MAC = GetMACAddress();
+        this.OSName = GetOSName();
+        this.CPUModel = GetCPUModel();
+
+        String clientName = clientSocket.getInetAddress().getHostName();
+
+        // Store data in redis database
+        dataAccess.setIP(clientName, clientSocket.getInetAddress().getHostAddress());
+        dataAccess.setMAC(clientName, MAC);
+        dataAccess.setOSName(clientName, OSName);
+    }
+
+    private void receiveDynamicInfo() throws Exception {
         while (this.clientSocket.isConnected()) {
             DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
 
@@ -136,22 +162,53 @@ public class ClientHandler extends Thread {
             System.out.println("MAC: " + MAC + ": " + processes.size());
 
             String clientName = clientSocket.getInetAddress().getHostName();
-            dataAccess.setIP(clientName, clientSocket.getInetAddress().getHostAddress());
-            dataAccess.setMAC(clientName, MAC);
-            dataAccess.setOSName(clientName, OSName);
+
             dataAccess.addCpuUsage(clientName, CPULoad);
             dataAccess.addMemUsage(clientName, MemUsage);
 
-            // ArrayList<Double> cpus = dataAccess.getCpuUsages();
-            // ArrayList<Long> mems = dataAccess.getMemoryUsages();
+            System.out.println("=========");
+        }
+    }
 
-            // for (Long element : mems) {
-            // System.out.println("Memory use: " + element);
-            // }
+    private void receiveObject() throws Exception {
 
-            // for (Double element : cpus) {
-            // System.out.println("CPU use: " + element);
-            // }
+        while (this.clientSocket.isConnected()) {
+            DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
+
+            Double CPULoad = dis.readDouble();
+            Long MemUsage = dis.readLong();
+            Long TotalMem = dis.readLong();
+
+            int diskLen = dis.readInt();
+            ArrayList<DiskInfo> diskInfos = new ArrayList<>();
+            for (int i = 0; i < diskLen; i++) {
+                String[] d = dis.readUTF().split(",");
+                diskInfos.add(new DiskInfo(d[0], Long.parseLong(d[1]), Long.parseLong(d[2])));
+            }
+
+            int length = dis.readInt();
+            byte[] data = new byte[length];
+            if (length > 0) {
+                dis.readFully(data, 0, length);
+            }
+
+            ArrayList<String> processes = Bytes2ArrayList(data);
+
+            System.out.println("=========");
+            System.out.println("OS: " + OSName + "\nCPU Model: " + CPUModel);
+            System.out.println("CPU Load: " + CPULoad);
+            System.out.println("Mem: " + MemUsage + "/" + TotalMem + "MB");
+            System.out.println("Disks: ");
+            for (DiskInfo d : diskInfos) {
+                System.out.println(d.PartitionName + " # Disk Space: " + d.UsageSpace + "/" + d.TotalSpace + "MB");
+            }
+
+            System.out.println("MAC: " + MAC + ": " + processes.size());
+
+            String clientName = clientSocket.getInetAddress().getHostName();
+
+            dataAccess.addCpuUsage(clientName, CPULoad);
+            dataAccess.addMemUsage(clientName, MemUsage);
 
             System.out.println("=========");
         }

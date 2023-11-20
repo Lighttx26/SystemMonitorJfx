@@ -81,13 +81,14 @@ public class overviewController {
         addClientPane(address.getHostName());
     }
 
-    public void addClientPane(String clientName) {
+    private void addClientPane(String clientName) {
         TitledPane newTitledPane = new TitledPane();
         newTitledPane.setText(clientName);
 
         AnchorPane contentPane = new AnchorPane();
-        // Customize the content of the TitledPane here if needed.
-        contentPane.setPrefSize(200, 180);
+        contentPane.setPrefSize(220, 180);
+
+        // Customize the content of the TitledPane
         Label ipLabel = new Label("IP Address:");
         Text ipText = new Text();
         ipText.setText(dataAccess.getIP(clientName));
@@ -143,7 +144,7 @@ public class overviewController {
 
         separator.setLayoutY(75.0);
         separator.setPrefHeight(0.0);
-        separator.setPrefWidth(200.0);
+        separator.setPrefWidth(220.0);
 
         contentPane.getChildren().addAll(ipLabel, macLabel, osLabel, ramLabel, cpuLabel,
                 ramProgressBar, cpuProgressBar, statusLabel, separator, ipText, macText, osText, statusText);
@@ -152,7 +153,6 @@ public class overviewController {
             public void handle(MouseEvent mouseEvent) {
                 if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                     if (mouseEvent.getClickCount() == 2) {
-                        System.out.println("double click");
                         openDetails(clientName);
                     }
                 }
@@ -196,6 +196,38 @@ public class overviewController {
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void removeClient(InetAddress address) {
+        this.clients.remove(address);
+        removeClientPane(address.getHostName());
+    }
+
+    private void removeClientPane(String clientName) {
+        for (TitledPane titledPane : clientPanes) {
+            if (titledPane.getText() == clientName) {
+                anchorScrollPane.getChildren().remove(titledPane);
+                clientPanes.remove(titledPane);
+                break;
+            }
+        }
+        relocationPanes();
+    }
+
+    private void relocationPanes() {
+
+        for (int i = 0; i < clientPanes.size(); i++) {
+            double xc, yc;
+            if (i % 2 == 0) {
+                xc = 14;
+                yc = 14 + (180 + gap) * i / 2;
+            } else {
+                xc = 14 + (200 + gap);
+                yc = 14 + (180 + gap) * (int) (i / 2);
+            }
+            clientPanes.get(i).setLayoutX(xc);
+            clientPanes.get(i).setLayoutY(yc);
         }
     }
 }
