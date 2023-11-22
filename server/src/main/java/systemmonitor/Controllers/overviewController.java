@@ -62,7 +62,8 @@ public class overviewController {
                 AnchorPane container = (AnchorPane) titledPane.getContent();
 
                 ProgressBar ramProgressBar = (ProgressBar) container.getChildren().get(5);
-                ramProgressBar.setProgress((double) dataAccess.getCurrentMemoryUsage(clientName) / 16000);
+                ramProgressBar.setProgress(
+                        (double) dataAccess.getCurrentMemoryUsage(clientName) / dataAccess.getTotalMem(clientName));
                 ProgressBar cpuProgressBar = (ProgressBar) container.getChildren().get(6);
                 cpuProgressBar.setProgress(dataAccess.getCurrentCpuUsage(clientName) / 100);
 
@@ -91,13 +92,10 @@ public class overviewController {
         // Customize the content of the TitledPane
         Label ipLabel = new Label("IP Address:");
         Text ipText = new Text();
-        ipText.setText(dataAccess.getIP(clientName));
         Label macLabel = new Label("MAC Address:");
-        Text macText = new Text(dataAccess.getMAC(clientName));
-        macText.setText(dataAccess.getMAC(clientName));
+        Text macText = new Text();
         Label osLabel = new Label("OS:");
-        Text osText = new Text(dataAccess.getOSName(clientName));
-        osText.setText(dataAccess.getOSName(clientName));
+        Text osText = new Text();
         Separator separator = new Separator();
         Label ramLabel = new Label("RAM:");
         Label cpuLabel = new Label("CPU:");
@@ -187,7 +185,7 @@ public class overviewController {
         try {
             Parent parent = fxmlLoader.load();
             detailsController dc = fxmlLoader.getController();
-            dc.setDL(clientName);
+            dc.setDL(clientName, dataAccess);
             dc.start();
 
             stage.setScene(new Scene(parent));

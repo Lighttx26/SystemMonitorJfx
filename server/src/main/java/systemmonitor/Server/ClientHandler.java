@@ -125,6 +125,7 @@ public class ClientHandler extends Thread {
         dataAccess.setIP(clientName, clientSocket.getInetAddress().getHostAddress());
         dataAccess.setMAC(clientName, MAC);
         dataAccess.setOSName(clientName, OSName);
+        dataAccess.setCPUModel(clientName, CPUModel);
     }
 
     private void receiveDynamicInfo() throws Exception {
@@ -155,7 +156,10 @@ public class ClientHandler extends Thread {
             System.out.println("CPU Load: " + CPULoad);
             System.out.println("Mem: " + MemUsage + "/" + TotalMem + "MB");
             System.out.println("Disks: ");
+
+            long TotalStorage = 0;
             for (DiskInfo d : diskInfos) {
+                TotalStorage += d.TotalSpace;
                 System.out.println(d.PartitionName + " # Disk Space: " + d.UsageSpace + "/" + d.TotalSpace + "MB");
             }
 
@@ -165,6 +169,8 @@ public class ClientHandler extends Thread {
 
             dataAccess.addCpuUsage(clientName, CPULoad);
             dataAccess.addMemUsage(clientName, MemUsage);
+            dataAccess.setTotalMem(clientName, TotalMem);
+            dataAccess.setTotalStorage(clientName, TotalStorage);
 
             System.out.println("=========");
         }

@@ -17,6 +17,23 @@ public class detailsController {
     private DataAccess dataAccess;
     private String clientName;
 
+    // GENERAL TAB
+    @FXML
+    private TextField tfPCname;
+    @FXML
+    private TextField tfIP;
+    @FXML
+    private TextField tfMAC;
+    @FXML
+    private TextField tfOS;
+    @FXML
+    private TextField tfCPUModel;
+    @FXML
+    private TextField tfTotalDisk;
+    @FXML
+    private TextField tfTotalMem;
+
+    // PERFORMANCE TAB
     @FXML
     private AreaChart<String, Number> memoryChart;
     @FXML
@@ -29,8 +46,7 @@ public class detailsController {
     private Text utilizationTxt;
     @FXML
     private AreaChart<String, Number> ethernetChart;
-    @FXML
-    private TextField textField;
+
     private double memtimeIndex = 1;
     private double memTimestep = 0.5;
     private int memSample = 100; // <= 100
@@ -39,14 +55,25 @@ public class detailsController {
     private double cpuTimestep = 0.5;
     private int cpuSample = 100; // <= 100
 
-    public void setDL(String clientName) {
-        dataAccess = new DataAccess();
+    public void setDL(String clientName, DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
         this.clientName = clientName;
     }
 
     public void start() throws IOException, InterruptedException {
+        initializeGeneral();
         initializeMemChart();
         initializeCpuChart();
+    }
+
+    private void initializeGeneral() {
+        tfPCname.setText(clientName);
+        tfIP.setText(dataAccess.getIP(clientName));
+        tfMAC.setText(dataAccess.getMAC(clientName));
+        tfOS.setText(dataAccess.getOSName(clientName));
+        tfCPUModel.setText(dataAccess.getCPUModel(clientName));
+        tfTotalDisk.setText(Long.toString(dataAccess.getTotalStorage(clientName)));
+        tfTotalMem.setText(Long.toString(dataAccess.getTotalMem(clientName)));
     }
 
     private void initializeMemChart() throws IOException, InterruptedException {
@@ -65,12 +92,6 @@ public class detailsController {
         // // Add data points to the series
         memDataSeries.getData().clear();
         memoryChart.getData().clear();
-
-        // ArrayList<Long> ar = da.getMemoryUsages();
-        // for (Long mem : ar) {
-        // memDataSeries.getData().add(new XYChart.Data<String,
-        // Number>(Integer.toString(timeIndex++), mem));
-        // }
 
         for (int i = 0; i < memSample - 1; i++) {
             memDataSeries.getData()
@@ -92,11 +113,7 @@ public class detailsController {
 
     private void updatememChartData() {
         // Update the chart data
-        // XYChart.Series<String, Number> dataSeries = new XYChart.Series<>();
         XYChart.Series<String, Number> memDataSeries = memoryChart.getData().get(0);
-
-        // dataSeries.getData().clear();
-        // lineChart.getData().clear();
 
         Long mem = dataAccess.getCurrentMemoryUsage(clientName);
 

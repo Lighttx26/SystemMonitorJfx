@@ -57,7 +57,10 @@ public class Server extends Thread {
             while (!serverSocket.isClosed()) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    System.out.println("Client connected: " + clientSocket.getInetAddress().getHostName());
+                    // System.out.println("Client connected: " +
+                    // clientSocket.getInetAddress().getHostName());
+                    System.out.println("Client connected: ");
+
                     Platform.runLater(() -> {
                         // Ensure that overview is not null before calling the method
                         if (overview != null) {
