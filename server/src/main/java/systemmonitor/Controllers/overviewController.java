@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -22,6 +23,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import systemmonitor.App;
 import systemmonitor.Utilities.DataAccess;
@@ -29,6 +31,7 @@ import systemmonitor.Utilities.DataAccess;
 public class overviewController {
     private ArrayList<InetAddress> clients; // clients's InetAddress
     private ObservableList<TitledPane> clientPanes = FXCollections.observableArrayList();
+    private ObservableList<Stage> openingStages = FXCollections.observableArrayList();
     private double timestep = 1;
     private DataAccess dataAccess;
 
@@ -50,31 +53,6 @@ public class overviewController {
                 event -> updateClientPane()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
-    }
-
-    private void updateClientPane() {
-        if (clientPanes.isEmpty())
-            return;
-
-        for (TitledPane titledPane : clientPanes) {
-            String clientName = titledPane.getText();
-            if (titledPane.getContent() instanceof AnchorPane) {
-                AnchorPane container = (AnchorPane) titledPane.getContent();
-
-                ProgressBar ramProgressBar = (ProgressBar) container.getChildren().get(5);
-                ramProgressBar.setProgress(
-                        (double) dataAccess.getCurrentMemoryUsage(clientName) / dataAccess.getTotalMem(clientName));
-                ProgressBar cpuProgressBar = (ProgressBar) container.getChildren().get(6);
-                cpuProgressBar.setProgress(dataAccess.getCurrentCpuUsage(clientName) / 100);
-
-                Text ipText = (Text) container.getChildren().get(9);
-                Text macText = (Text) container.getChildren().get(10);
-                Text osText = (Text) container.getChildren().get(11);
-                ipText.setText(dataAccess.getIP(clientName));
-                macText.setText(dataAccess.getMAC(clientName));
-                osText.setText(dataAccess.getOSName(clientName));
-            }
-        }
     }
 
     public void addClient(InetAddress address) {
@@ -190,27 +168,69 @@ public class overviewController {
 
             stage.setScene(new Scene(parent));
             stage.setTitle(clientName);
-
+            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent t) {
+                    openingStages.remove(stage);
+                }
+            });
+            openingStages.add(stage);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private void updateClientPane() {
+        if (clientPanes.isEmpty())
+            return;
+
+        for (TitledPane titledPane : clientPanes) {
+            String clientName = titledPane.getText();
+            if (titledPane.getContent() instanceof AnchorPane) {
+                AnchorPane container = (AnchorPane) titledPane.getContent();
+
+                ProgressBar ramProgressBar = (ProgressBar) container.getChildren().get(5);
+                ramProgressBar.setProgress(
+                        (double) dataAccess.getCurrentMemoryUsage(clientName) / dataAccess.getTotalMem(clientName));
+                ProgressBar cpuProgressBar = (ProgressBar) container.getChildren().get(6);
+                cpuProgressBar.setProgress(dataAccess.getCurrentCpuUsage(clientName) / 100);
+
+                Text ipText = (Text) container.getChildren().get(9);
+                Text macText = (Text) container.getChildren().get(10);
+                Text osText = (Text) container.getChildren().get(11);
+                ipText.setText(dataAccess.getIP(clientName));
+                macText.setText(dataAccess.getMAC(clientName));
+                osText.setText(dataAccess.getOSName(clientName));
+            }
+        }
+    }
+
     public void removeClient(InetAddress address) {
         this.clients.remove(address);
         removeClientPane(address.getHostName());
+        removeClientDetailsStage(address.getHostName());
     }
 
     private void removeClientPane(String clientName) {
         for (TitledPane titledPane : clientPanes) {
-            if (titledPane.getText() == clientName) {
+            if (titledPane.getText().equals(clientName)) {
                 anchorScrollPane.getChildren().remove(titledPane);
                 clientPanes.remove(titledPane);
                 break;
             }
         }
         relocationPanes();
+    }
+
+    private void removeClientDetailsStage(String clientName) {
+        for (Stage stage : openingStages) {
+            if (stage.getTitle().equals(clientName)) {
+                stage.close();
+                openingStages.remove(stage);
+                break;
+            }
+        }
     }
 
     private void relocationPanes() {

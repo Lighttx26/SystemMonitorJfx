@@ -12,9 +12,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 import javafx.application.Platform;
+import systemmonitor.Controllers.detailsController;
 import systemmonitor.Controllers.overviewController;
 import systemmonitor.Utilities.DataAccess;
 import systemmonitor.Utilities.Classes.DiskInfo;
@@ -47,15 +49,17 @@ public class ClientHandler extends Thread {
             receiveDynamicInfo();
             // receiveObject();
             // receiveFile();
-        } catch (Exception e) {
-            // TODO: handle interrupt connection
+        } catch (SocketException e) {
             Platform.runLater(() -> {
                 // Ensure that overview is not null before calling the method
                 if (overview != null) {
                     overview.removeClient(clientSocket.getInetAddress());
                 }
             });
-            // e.printStackTrace();
+
+        } catch (Exception e) {
+            // TODO: handle interrupt connection
+            e.printStackTrace();
         } finally {
             if (clientSocket != null) {
                 try {
@@ -136,6 +140,11 @@ public class ClientHandler extends Thread {
             Long MemUsage = dis.readLong();
             Long TotalMem = dis.readLong();
 
+            // ==========================
+            double traffic_send = dis.readDouble();
+            double traffic_received = dis.readDouble();
+            // ==========================
+
             int diskLen = dis.readInt();
             ArrayList<DiskInfo> diskInfos = new ArrayList<>();
             for (int i = 0; i < diskLen; i++) {
@@ -155,6 +164,8 @@ public class ClientHandler extends Thread {
             System.out.println("OS: " + OSName + "\nCPU Model: " + CPUModel);
             System.out.println("CPU Load: " + CPULoad);
             System.out.println("Mem: " + MemUsage + "/" + TotalMem + "MB");
+            System.out.printf("Traffic send: %.5f\n", traffic_send);
+            System.out.printf("Traffic received: %.5f\n", traffic_received);
             System.out.println("Disks: ");
 
             long TotalStorage = 0;
@@ -171,6 +182,8 @@ public class ClientHandler extends Thread {
             dataAccess.addMemUsage(clientName, MemUsage);
             dataAccess.setTotalMem(clientName, TotalMem);
             dataAccess.setTotalStorage(clientName, TotalStorage);
+            dataAccess.addTrafficReceived(clientName, traffic_received);
+            dataAccess.addTrafficSend(clientName, traffic_send);
 
             System.out.println("=========");
         }
