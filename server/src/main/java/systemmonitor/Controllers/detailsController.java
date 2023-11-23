@@ -1,7 +1,6 @@
 package systemmonitor.Controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -235,7 +234,6 @@ public class detailsController {
     private void updateTrafficChartData(XYChart.Series<String, Number> sendSeries,
             XYChart.Series<String, Number> receivedSeries) {
         // Update the chart data for send traffic
-        ArrayList<Double> sendTrafficList = dataAccess.getTrafficSend(clientName);
         Double currentSendTraffic = dataAccess.getCurrentTrafficSend(clientName);
         sendTxt.setText(String.format("%.2f", currentSendTraffic));
 
@@ -245,7 +243,6 @@ public class detailsController {
         sendSeries.getData().add(new XYChart.Data<>(Double.toString(trafficTimeIndex), currentSendTraffic));
 
         // Update the chart data for received traffic
-        ArrayList<Double> receivedTrafficList = dataAccess.getTrafficReceived(clientName);
         Double currentReceivedTraffic = dataAccess.getCurrentTrafficReceived(clientName);
         receivedTxt.setText(String.format("%.2f", currentReceivedTraffic));
 
