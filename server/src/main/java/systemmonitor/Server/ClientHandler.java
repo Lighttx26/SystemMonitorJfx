@@ -16,7 +16,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 
 import javafx.application.Platform;
-import systemmonitor.Controllers.detailsController;
 import systemmonitor.Controllers.overviewController;
 import systemmonitor.Utilities.DataAccess;
 import systemmonitor.Utilities.Classes.DiskInfo;
@@ -58,7 +57,6 @@ public class ClientHandler extends Thread {
             });
 
         } catch (Exception e) {
-            // TODO: handle interrupt connection
             e.printStackTrace();
         } finally {
             if (clientSocket != null) {

@@ -28,10 +28,16 @@ import systemmonitor.App;
 import systemmonitor.Utilities.DataAccess;
 
 public class overviewController {
-    private ArrayList<InetAddress> clients; // clients's InetAddress
+    // List of Client's InetAddresses
+    private ArrayList<InetAddress> clients;
+    // List of client's panes (client's pane is a titled pane)
     private ObservableList<TitledPane> clientPanes = FXCollections.observableArrayList();
+    // Details stages of clients - a stage popup when double click on a client's
+    // pane
     private ObservableList<Stage> openingStages = FXCollections.observableArrayList();
+    // timestep to reload information of client
     private double timestep = 1;
+    // Redis connector
     private DataAccess dataAccess;
 
     @FXML
@@ -39,7 +45,7 @@ public class overviewController {
     @FXML
     private AnchorPane anchorScrollPane;
 
-    private double gap = 50;
+    private double gap = 50; // distance between two client's panes
 
     // Constructor
     public overviewController() {
@@ -54,11 +60,13 @@ public class overviewController {
         timeline.play();
     }
 
+    // A new client connects to server
     public void addClient(InetAddress address) {
         this.clients.add(address);
         addClientPane(address.getHostName());
     }
 
+    // Dynamically add client's panes
     private void addClientPane(String clientName) {
         TitledPane newTitledPane = new TitledPane();
         newTitledPane.setText(clientName);
@@ -67,6 +75,8 @@ public class overviewController {
         contentPane.setPrefSize(220, 180);
 
         // Customize the content of the TitledPane
+
+        // The components:
         Label ipLabel = new Label("IP Address:");
         Text ipText = new Text();
         Label macLabel = new Label("MAC Address:");
@@ -81,6 +91,7 @@ public class overviewController {
         Label statusLabel = new Label("Status:");
         Text statusText = new Text("status");
 
+        // Set size and layout for components:
         ipLabel.setLayoutX(14.0);
         ipLabel.setLayoutY(14.0);
         ipText.setLayoutX(106);
@@ -123,6 +134,8 @@ public class overviewController {
 
         contentPane.getChildren().addAll(ipLabel, macLabel, osLabel, ramLabel, cpuLabel,
                 ramProgressBar, cpuProgressBar, statusLabel, separator, ipText, macText, osText, statusText);
+
+        // Add event: double click on a TitledPane
         contentPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
@@ -155,6 +168,7 @@ public class overviewController {
         anchorScrollPane.getChildren().add(newTitledPane);
     }
 
+    // Pop up details stage (details.fxml form)
     private void openDetails(String clientName) {
         FXMLLoader fxmlLoader = new FXMLLoader(
                 App.class.getResource("details" + ".fxml"));
@@ -180,6 +194,7 @@ public class overviewController {
         }
     }
 
+    // Update panes (client's information) after a step of time
     private void updateClientPane() {
         if (clientPanes.isEmpty())
             return;
@@ -205,12 +220,14 @@ public class overviewController {
         }
     }
 
+    // A client is disconnected from server
     public void removeClient(InetAddress address) {
         this.clients.remove(address);
         removeClientPane(address.getHostName());
         removeClientDetailsStage(address.getHostName());
     }
 
+    // Remove the client's pane
     private void removeClientPane(String clientName) {
         for (TitledPane titledPane : clientPanes) {
             if (titledPane.getText().equals(clientName)) {
@@ -222,16 +239,7 @@ public class overviewController {
         relocationPanes();
     }
 
-    private void removeClientDetailsStage(String clientName) {
-        for (Stage stage : openingStages) {
-            if (stage.getTitle().equals(clientName)) {
-                stage.close();
-                openingStages.remove(stage);
-                break;
-            }
-        }
-    }
-
+    // Relocation the others
     private void relocationPanes() {
 
         for (int i = 0; i < clientPanes.size(); i++) {
@@ -247,4 +255,16 @@ public class overviewController {
             clientPanes.get(i).setLayoutY(yc);
         }
     }
+
+    // Close the stage which belongs to that client (if it is opening)
+    private void removeClientDetailsStage(String clientName) {
+        for (Stage stage : openingStages) {
+            if (stage.getTitle().equals(clientName)) {
+                stage.close();
+                openingStages.remove(stage);
+                break;
+            }
+        }
+    }
+
 }

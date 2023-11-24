@@ -104,7 +104,7 @@ public class detailsController {
         NumberAxis yAxis = (NumberAxis) memoryChart.getYAxis();
         yAxis.setAutoRanging(false);
         yAxis.setLowerBound(0);
-        yAxis.setUpperBound(totalMem); // TODO: Max memory of client's ram
+        yAxis.setUpperBound(totalMem);
         yAxis.setTickUnit(500);
 
         XYChart.Series<String, Number> memDataSeries = new XYChart.Series<>();
