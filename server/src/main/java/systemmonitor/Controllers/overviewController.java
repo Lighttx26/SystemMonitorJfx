@@ -203,12 +203,16 @@ public class overviewController {
             String clientName = titledPane.getText();
             if (titledPane.getContent() instanceof AnchorPane) {
                 AnchorPane container = (AnchorPane) titledPane.getContent();
-
                 ProgressBar ramProgressBar = (ProgressBar) container.getChildren().get(5);
-                ramProgressBar.setProgress(
-                        (double) dataAccess.getCurrentMemoryUsage(clientName) / dataAccess.getTotalMem(clientName));
                 ProgressBar cpuProgressBar = (ProgressBar) container.getChildren().get(6);
-                cpuProgressBar.setProgress(dataAccess.getCurrentCpuUsage(clientName) / 100);
+                try {
+                    ramProgressBar.setProgress(
+                            (double) dataAccess.getCurrentMemoryUsage(clientName) / dataAccess.getTotalMem(clientName));
+                    cpuProgressBar.setProgress(dataAccess.getCurrentCpuUsage(clientName) / 100);
+                } catch (NumberFormatException e) {
+                    ramProgressBar.setProgress(0);
+                    cpuProgressBar.setProgress(0);
+                }
 
                 Text ipText = (Text) container.getChildren().get(9);
                 Text macText = (Text) container.getChildren().get(10);

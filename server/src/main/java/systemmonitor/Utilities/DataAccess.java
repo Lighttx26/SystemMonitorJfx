@@ -11,7 +11,7 @@ public class DataAccess {
 
     public DataAccess() {
         jedis = new Jedis("localhost", 6379);
-        // jedis.flushAll();
+        jedis.flushAll();
     }
 
     public ArrayList<Double> getCpuUsages(String clientName) {
