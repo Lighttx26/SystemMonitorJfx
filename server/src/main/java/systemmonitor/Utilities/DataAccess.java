@@ -2,6 +2,7 @@ package systemmonitor.Utilities;
 
 import java.util.ArrayList;
 import redis.clients.jedis.Jedis;
+import systemmonitor.Utilities.Classes.ProcessInfo;
 
 public class DataAccess {
     // private String key;
@@ -13,6 +14,7 @@ public class DataAccess {
         jedis = new Jedis("localhost", 6379);
         jedis.flushAll();
     }
+
 
     public ArrayList<Double> getCpuUsages(String clientName) {
         String key = "Client " + clientName + ":CPU";

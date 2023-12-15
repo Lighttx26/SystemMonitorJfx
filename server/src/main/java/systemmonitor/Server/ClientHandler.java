@@ -19,6 +19,7 @@ import javafx.application.Platform;
 import systemmonitor.Controllers.overviewController;
 import systemmonitor.Utilities.DataAccess;
 import systemmonitor.Utilities.Classes.DiskInfo;
+import systemmonitor.Utilities.Classes.ProcessInfo;
 
 import java.io.File;
 
@@ -109,9 +110,10 @@ public class ClientHandler extends Thread {
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream(b);
             ObjectInputStream ois = new ObjectInputStream(bais);
-            ArrayList<String> data = (ArrayList) ois.readObject();
+            ArrayList<String> data = (ArrayList<String>) ois.readObject();
             return data;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -156,7 +158,11 @@ public class ClientHandler extends Thread {
                 dis.readFully(data, 0, length);
             }
 
-            ArrayList<String> processes = Bytes2ArrayList(data);
+            ArrayList<ProcessInfo> processes = ProcessInfo.convert2ArrayListProcessInfo(Bytes2ArrayList(data));
+
+            for (ProcessInfo p: processes){
+                System.out.println(p.toString());
+            }
 
             System.out.println("=========");
             System.out.println("OS: " + OSName + "\nCPU Model: " + CPUModel);
@@ -168,8 +174,8 @@ public class ClientHandler extends Thread {
 
             long TotalStorage = 0;
             for (DiskInfo d : diskInfos) {
-                TotalStorage += d.TotalSpace;
-                System.out.println(d.PartitionName + " # Disk Space: " + d.UsageSpace + "/" + d.TotalSpace + "MB");
+                TotalStorage += d.getTotalSpace();
+                System.out.println(d.getPartitionName() + " # Disk Space: " + d.getUsageSpace() + "/" + d.getTotalSpace() + "MB");
             }
 
             System.out.println("MAC: " + MAC + ": " + processes.size());
@@ -217,7 +223,7 @@ public class ClientHandler extends Thread {
             System.out.println("Mem: " + MemUsage + "/" + TotalMem + "MB");
             System.out.println("Disks: ");
             for (DiskInfo d : diskInfos) {
-                System.out.println(d.PartitionName + " # Disk Space: " + d.UsageSpace + "/" + d.TotalSpace + "MB");
+                System.out.println(d.getPartitionName() + " # Disk Space: " + d.getUsageSpace() + "/" + d.getTotalSpace() + "MB");
             }
 
             System.out.println("MAC: " + MAC + ": " + processes.size());
